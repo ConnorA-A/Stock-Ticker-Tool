@@ -55,3 +55,21 @@ while True:
     except ValueError:
         print("Please enter a valid ticker")
 
+    print("\n--- 6 Month Price History ---")
+    hist = stock.history(period="6mo")
+    average_close = hist['Close'].mean()
+    high = hist['Close'].max()
+    low = hist['Close'].min()
+    average_daily_return = hist['Close'].pct_change().mean() * 100
+    best_day = hist['Close'].pct_change().max() * 100
+    best_day_date = hist['Close'].pct_change().idxmax()
+    worst_day = hist['Close'].pct_change().min() * 100
+    worst_day_date = hist['Close'].pct_change().idxmin()
+    print(f"Average Close Price: ${average_close:.2f}")
+    print(f"Higheest Closing Price: ${high:.2f}")
+    print(f"Lowest Closing Price: ${low:.2f}")
+    print(f"Average Daily Return: {average_daily_return:.2f}%")
+    print(f"Best Day: {best_day_date.strftime('%d/%m/%Y')} with a return of {best_day:.2f}%")
+    print(f"Worst Day: {worst_day_date.strftime('%d/%m/%Y')} with a return of {worst_day:.2f}%")
+    print()
+

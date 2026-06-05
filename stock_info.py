@@ -1,5 +1,6 @@
 import yfinance as yf
 import pandas as pd
+import matplotlib.pyplot as plt
 while True:
     ticker = input("Enter the stock ticker/s symbol (if two tickers, seperate with a comma) : ")
     tickers = ticker.split(",")
@@ -95,6 +96,26 @@ while True:
             print(f"Best Day: {best_day_date.strftime('%d/%m/%Y')} with a return of {best_day:.2f}%")
             print(f"Worst Day: {worst_day_date.strftime('%d/%m/%Y')} with a return of {worst_day:.2f}%")
             print()
+
+            hist = stock.history(period="1y")
+            fifty_day_moving_average = hist['Close'].rolling(window=50).mean()
+            hist = hist.tail(126)
+            fifty_day_moving_average = fifty_day_moving_average.tail(126)
+
+
+            plt.figure(figsize=(12, 6))
+            plt.plot(hist['Close'])
+            plt.plot(fifty_day_moving_average, color='orange', linestyle='--', label='50-Day Moving Average')
+            plt.grid(True)
+            plt.title(f"{ticker.upper()} 6 Month Price History")
+            plt.xlabel("Date")
+            plt.ylabel("Close Price")
+            plt.legend()
+            plt.show()
+
+
+
+
 
         except KeyError:
             print("This ticker does not exist. Please try again")
@@ -310,6 +331,22 @@ while True:
             ])
             print(df.to_string(col_space=20))
 
+
+            hist = stock.history(period='1y')
+            hist = hist.tail(126)
+            percentage_change = (hist['Close'] / hist['Close'].iloc[0] - 1) * 100
+            comparison_hist = comparison_stock.history(period='1y')
+            comparison_hist = comparison_hist.tail(126)
+            comparison_percentage_change = (comparison_hist['Close'] / comparison_hist['Close'].iloc[0] - 1) * 100
+
+            plt.plot(percentage_change, color = 'blue', label = ticker.upper())
+            plt.plot(comparison_percentage_change, color = 'red', label = comparison_ticker.upper())
+            plt.xlabel("Date")
+            plt.ylabel("Percentage Change (%)")
+            plt.title(f"{ticker.upper()} vs {comparison_ticker.upper()} 6 Month Price Percentage Change")
+            plt.legend()
+            plt.grid(True)
+            plt.show()
 
 
 

@@ -1,7 +1,7 @@
 import yfinance as yf
 import pandas as pd
 while True:
-    ticker = input("Enter the stock ticker/s symbol : ")
+    ticker = input("Enter the stock ticker/s symbol (if two tickers, seperate with a comma) : ")
     tickers = ticker.split(",")
     if ticker.lower() == 'quit':
          break
@@ -141,6 +141,58 @@ while True:
             fifty_day_average_change_percent = stock.info.get('fiftyDayAverageChangePercent', 0)
             comparison_fifty_day_average_change_percent = comparison_stock.info.get('fiftyDayAverageChangePercent', 0)
 
+            forwardPE = stock.info.get('forwardPE', 'N/A')
+            if forwardPE != 'N/A':
+                forwardPE = forwardPE
+            comparison_forwardPE = comparison_stock.info.get('forwardPE', 'N/A')
+            if comparison_forwardPE != 'N/A':
+                comparison_forwardPE = comparison_forwardPE
+
+            marketcap = stock.info.get('marketCap', 0)
+            if marketcap >= 1e12:
+                marketcap_str = f"{round(marketcap / 1e12, 1)}T"
+            elif marketcap >= 1e9:
+                marketcap_str = f"{round(marketcap / 1e9, 1)}B"
+            elif marketcap >= 1e6:
+                marketcap_str = f"{round(marketcap / 1e6, 1)}m"
+            else:
+                marketcap_str = f"{marketcap}"
+
+            comparison_marketcap = comparison_stock.info.get('marketCap', 0)
+            if comparison_marketcap >= 1e12:
+                comparison_marketcap_str = f"{round(comparison_marketcap / 1e12, 1)}T"
+            elif comparison_marketcap >= 1e9:
+                comparison_marketcap_str = f"{round(comparison_marketcap / 1e9, 1)}B"
+            elif comparison_marketcap >= 1e6:
+                comparison_marketcap_str = f"{round(comparison_marketcap / 1e6, 1)}m"
+            else:
+                comparison_marketcap_str = f"{comparison_marketcap}"
+
+            forwardEPS = stock.info.get('forwardEps', 'N/A')
+            if forwardEPS != 'N/A':
+                forwardEPS = forwardEPS
+            comparison_forwardEPS = comparison_stock.info.get('forwardEps', 'N/A')
+            if comparison_forwardEPS != 'N/A':
+                comparison_forwardEPS = comparison_forwardEPS
+
+            sector = stock.info.get('sector', 'N/A')
+            comparison_sector = comparison_stock.info.get('sector', 'N/A')
+
+            industry = stock.info.get('industry', 'N/A')
+            comparison_industry = comparison_stock.info.get('industry', 'N/A')
+
+            beta = stock.info.get('beta', 'N/A')
+            if beta != 'N/A':
+                beta = round(beta, 2) 
+            comparison_beta = comparison_stock.info.get('beta', 'N/A')
+            if comparison_beta != 'N/A':
+                comparison_beta = round(comparison_beta, 2)
+                                  
+
+
+            
+            
+
             
 
 
@@ -158,7 +210,16 @@ while True:
                                  f"{round(dividend_yield, 2)}%",
                                  f"{round(price_to_book, 2)}",
                                  f"{average_analyst_rating}",
-                                 f"{round(fifty_day_average_change_percent, 2)}%"],
+                                 f"{round(fifty_day_average_change_percent * 100, 2)}%",
+                                 f"{round(forwardPE, 2)}",
+                                 f"{marketcap_str}",
+                                 f"{round(forwardEPS, 2)}",
+                                 f"{sector}",
+                                 f"{industry}",
+                                 f"{round(beta, 2)}"],
+                                 
+
+                                 
                 comparison_ticker.upper(): [f"${round(comparison_price, 2)}", 
                                             f"{round(comparison_daily_change, 2)}%", 
                                             f"${round(comparison_fifty_two_week_high, 2)}", 
@@ -169,7 +230,13 @@ while True:
                                             f"{round(comparison_dividend_yield, 2)}%",
                                             f"{round(comparison_price_to_book, 2)}",
                                             f"{comparison_average_analyst_rating}",
-                                            f"{round(comparison_fifty_day_average_change_percent, 2)}%"]
+                                            f"{round(comparison_fifty_day_average_change_percent * 100, 2)}%",
+                                            f"{round(comparison_forwardPE, 2)}",
+                                            f"{comparison_marketcap_str}",
+                                            f"{round(comparison_forwardEPS, 2)}",
+                                            f"{comparison_sector}",
+                                            f"{comparison_industry}",
+                                            f"{round(comparison_beta, 2)}"],
             }
             df = pd.DataFrame(data, index = [
                 'Current Price', 
@@ -182,8 +249,71 @@ while True:
                   "Dividend Yield", 
                   "Price to Book",
                   "Average Analyst Rating",
-                  "50 Day Average Percent Change"])
+                  "50 Day Average Percent Change",
+                  "ForwardPE",
+                  "Marketcap",
+                  "ForwardEPS",
+                  "Sector",
+                  "Industry",
+                  "Beta"])
+           
+           
             print(df)
+
+            print("\n--- 6 Month Price History ---")
+
+            hist = stock.history(period="6mo")
+            comparison_hist = comparison_stock.history(period="6mo")
+
+            average_close = hist['Close'].mean()
+            comparison_average_close = comparison_hist['Close'].mean()
+
+            high = hist['Close'].max()
+            comparison_high = comparison_hist['Close'].max()
+
+            low = hist['Close'].min()
+            comparison_low = comparison_hist['Close'].min()
+
+            average_daily_return = hist['Close'].pct_change().mean() * 100
+            comparison_average_daily_return = comparison_hist['Close'].pct_change().mean() * 100
+
+            best_day = hist['Close'].pct_change().max() * 100
+            best_day_date = hist['Close'].pct_change().idxmax()
+            comparison_best_day = comparison_hist['Close'].pct_change().max() * 100
+            comparison_best_day_date = comparison_hist['Close'].pct_change().idxmax()
+            
+   
+
+
+            data = {
+                ticker.upper(): [f"${round(average_close, 2)}",
+                                 f"${round(high, 2)}",
+                                 f"${round(low, 2)}",
+                                 f"{round(average_daily_return, 2)}%",
+                                 f"{best_day_date.strftime('%d/%m/%Y')}: {round(best_day, 2)}%"],
+                                
+
+
+
+                comparison_ticker.upper(): [f"${round(comparison_average_close, 2)}",
+                                            f"${round(comparison_high, 2)}",
+                                            f"${round(comparison_low, 2)}",
+                                            f"{round(comparison_average_daily_return, 2)}%",
+                                            f"{comparison_best_day_date.strftime('%d/%m/%Y')}: {round(comparison_best_day, 2)}%"]
+            }
+            df = pd.DataFrame(data, index = [
+                'Average Close Price',
+                'Highest Closing Price',
+                'Lowest Closing Price',
+                'Average Daily Return',
+                'Best Day (Date : Return)'
+            ])
+            print(df.to_string(col_space=20))
+
+
+
+
+
         except KeyError:
             print("One or both of the tickers do not exist. Please try again")
         except ValueError:
